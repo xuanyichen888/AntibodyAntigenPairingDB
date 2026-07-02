@@ -1,0 +1,4 @@
+# Data-fetch / pipeline dependencies (not needed to run the Streamlit app).
+# Install only when refreshing PubMed/PDB/patent sources:
+#   pip install -r requirements-pipeline.txt
+certifi>=2024.0.0

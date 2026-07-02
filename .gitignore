@@ -1,0 +1,29 @@
+# Python / local environment
+__pycache__/
+*.py[cod]
+.venv/
+.env
+
+# System files
+.DS_Store
+~$*
+
+# Local app/session files
+.claude/
+dist/
+
+# Generated source refresh state
+checkpoint*.json
+*_done.json
+
+# Optional bulky or intermediate outputs.
+# The app-facing root files below are intentionally kept:
+#   antibody_antigen_master_v2.csv
+#   pubmed_references.csv
+data/raw/
+data/pdb/
+data/patent/
+data/literature/
+outputs/
+*.bak
+*.tmp
