@@ -13,6 +13,9 @@ DATA_PATH = PROJECT_ROOT / "antibody_antigen_master_v2.csv"
 LITERATURE_PATH = PROJECT_ROOT / "pubmed_references.csv"
 V1_PATH = PROJECT_ROOT / "outputs" / "candidates_v1.csv"
 V2_PATH = PROJECT_ROOT / "outputs" / "candidates_v2.csv"
+PATENT_SEARCH_AUDIT_PATH = PROJECT_ROOT / "outputs" / "patent_search_audit.csv"
+PATENT_VALIDATION_QUEUE_PATH = PROJECT_ROOT / "outputs" / "patent_validation_queue.csv"
+PATENT_SUMMARY_PATH = PROJECT_ROOT / "outputs" / "patent_validation_patent_summary.csv"
 
 
 @st.cache_data
@@ -26,6 +29,11 @@ def load_data(mtime: float):
 @st.cache_data
 def load_literature(mtime: float):
     return pd.read_csv(LITERATURE_PATH, dtype=str).fillna("")
+
+
+@st.cache_data
+def load_csv(path: str, mtime: float):
+    return pd.read_csv(path, dtype=str).fillna("")
 
 
 def search_df(df: pd.DataFrame, query: str) -> pd.DataFrame:
@@ -118,8 +126,8 @@ col4.metric("Binder Types", filtered["binder_type"].nunique())
 col5.metric("With Affinity", (filtered["affinity_value"] != "").sum())
 
 # ── Distribution charts ──────────────────────────────────────────────────────
-tab_table, tab_charts, tab_detail, tab_literature = st.tabs(
-    ["Data Table", "Charts", "Pair Detail", "Literature"]
+tab_table, tab_charts, tab_detail, tab_literature, tab_validation = st.tabs(
+    ["Data Table", "Charts", "Pair Detail", "Literature", "Validation"]
 )
 
 with tab_table:
@@ -270,6 +278,110 @@ with tab_literature:
             "pubmed_references_filtered.csv",
             "text/csv",
         )
+
+with tab_validation:
+    st.subheader("Patent Search Audit and Validation Queue")
+    st.caption(
+        "These tables make the v2 candidate status explicit. NCBI Patent rows still need "
+        "manual SEQ ID NO, chain-role, and patent-context validation before promotion to v3."
+    )
+
+    validation_paths = {
+        "Search Audit": PATENT_SEARCH_AUDIT_PATH,
+        "Patent Queue": PATENT_VALIDATION_QUEUE_PATH,
+        "Patent Summary": PATENT_SUMMARY_PATH,
+    }
+    missing = [label for label, path in validation_paths.items() if not path.exists()]
+    if missing:
+        st.info(
+            "Run `python3 scripts/build_patent_review_artifacts.py` to generate: "
+            + ", ".join(missing)
+        )
+    else:
+        search_audit = load_csv(str(PATENT_SEARCH_AUDIT_PATH), PATENT_SEARCH_AUDIT_PATH.stat().st_mtime)
+        patent_queue = load_csv(str(PATENT_VALIDATION_QUEUE_PATH), PATENT_VALIDATION_QUEUE_PATH.stat().st_mtime)
+        patent_summary = load_csv(str(PATENT_SUMMARY_PATH), PATENT_SUMMARY_PATH.stat().st_mtime)
+
+        qa_col1, qa_col2, qa_col3, qa_col4 = st.columns(4)
+        qa_col1.metric("Search Targets", f"{len(search_audit):,}")
+        qa_col2.metric("Patent Rows", f"{len(patent_queue):,}")
+        qa_col3.metric("Unique Patents", f"{len(patent_summary):,}")
+        qa_col4.metric(
+            "P1 Rows",
+            f"{patent_queue['priority'].str.startswith('P1').sum():,}",
+            help="Rows needing binder-type, SEQ ID NO, or chain-pairing review.",
+        )
+
+        validation_view = st.radio(
+            "Validation table",
+            ["Patent Queue", "Patent Summary", "Search Audit"],
+            horizontal=True,
+        )
+
+        if validation_view == "Patent Queue":
+            priority_options = sorted(patent_queue["priority"].unique())
+            selected_priority = st.multiselect(
+                "Priority",
+                priority_options,
+                default=priority_options,
+                key="validation_priority",
+            )
+            queue_query = st.text_input("Search queue", "", key="validation_queue_search")
+            visible = patent_queue[patent_queue["priority"].isin(selected_priority)].copy()
+            if queue_query.strip():
+                terms = queue_query.lower().split()
+                searchable = (
+                    visible["record_id"].str.lower() + " " +
+                    visible["antigen_name"].str.lower() + " " +
+                    visible["ncbi_accession"].str.lower() + " " +
+                    visible["patent_number"].str.lower() + " " +
+                    visible["binder_name"].str.lower() + " " +
+                    visible["validation_questions"].str.lower()
+                )
+                mask = pd.Series(True, index=visible.index)
+                for term in terms:
+                    mask &= searchable.str.contains(term, na=False, regex=False)
+                visible = visible[mask]
+            queue_cols = [
+                "priority", "record_id", "antigen_name", "ncbi_accession",
+                "patent_number", "seq_id_no_guess", "binder_type",
+                "binder_type_status", "binder_sequence_length",
+                "validation_questions", "google_patents_url", "manual_ncbi_url",
+            ]
+            st.dataframe(visible[queue_cols], use_container_width=True, height=520)
+            st.download_button(
+                "Download patent validation queue (CSV)",
+                visible.to_csv(index=False).encode("utf-8"),
+                "patent_validation_queue_filtered.csv",
+                "text/csv",
+            )
+        elif validation_view == "Patent Summary":
+            summary_cols = [
+                "priority", "patent_number", "row_count", "target_count",
+                "targets", "unresolved_binder_type_rows", "sequence_ids_seen",
+                "google_patents_url",
+            ]
+            st.dataframe(patent_summary[summary_cols], use_container_width=True, height=520)
+            st.download_button(
+                "Download patent summary (CSV)",
+                patent_summary.to_csv(index=False).encode("utf-8"),
+                "patent_validation_patent_summary.csv",
+                "text/csv",
+            )
+        else:
+            search_cols = [
+                "target_name", "category", "uniprot_id", "retmax",
+                "ncbi_hits_reported", "hit_count_capped_at_retmax",
+                "patent_intermediate_rows", "final_master_rows",
+                "unique_patents_final", "manual_ncbi_url", "google_patents_url",
+            ]
+            st.dataframe(search_audit[search_cols], use_container_width=True, height=520)
+            st.download_button(
+                "Download search audit (CSV)",
+                search_audit.to_csv(index=False).encode("utf-8"),
+                "patent_search_audit.csv",
+                "text/csv",
+            )
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 st.sidebar.markdown("---")

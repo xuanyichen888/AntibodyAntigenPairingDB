@@ -48,7 +48,7 @@ app.py                               -> Streamlit web app
 ## Data Summary
 
 - **3,733** antibody-antigen sequence-pair candidates
-- **62** therapeutic targets searched across NCBI Patent
+- **64** therapeutic targets searched across NCBI Patent
 - **3** sequence sources: RCSB PDB (754), ProteinBase seed (300), NCBI Patent (2,679)
 - **7+** binder types: antibody fragment, scFv, antibody, nanobody, heavy chain, light chain, Fab, other
 - **90** rows with affinity values
@@ -59,7 +59,7 @@ app.py                               -> Streamlit web app
 ## Versions
 
 - `outputs/candidates_v1.csv`: 300 rows, ProteinBase seed only
-- `outputs/candidates_v2.csv`: 1,310 rows, ProteinBase + PDB + NCBI Patent
+- `outputs/candidates_v2.csv`: 3,733 rows, ProteinBase + PDB + NCBI Patent
 - `antibody_antigen_master_v2.csv`: current app-facing master table
 - `outputs/antibody_antigen_curated.csv`: header-only curated table until manual review
 - `candidates_v3.csv`: planned manually curated, literature-supported subset
@@ -95,6 +95,9 @@ outputs/
   antibody_antigen_candidates.csv
   antibody_antigen_curated.csv
   binder_type_review_queue.csv
+  patent_search_audit.csv
+  patent_validation_queue.csv
+  patent_validation_patent_summary.csv
   manual_validation_sample.csv
   validation_memo.md
 
@@ -129,6 +132,7 @@ python3 scripts/fetch_patent_sequences.py
 python3 scripts/fetch_pubmed_references.py --max-targets 30 --retmax 5
 python3 scripts/normalize_antigens.py
 python3 scripts/merge_candidates.py
+python3 scripts/build_patent_review_artifacts.py
 python3 scripts/check_project.py
 ```
 
@@ -163,6 +167,11 @@ the app continues to read the root master table.
 - NCBI Patent rows are target-annotated sequence candidates. They need patent
   context review for heavy/light pairing, `SEQ ID NO`, and claim/example support.
   Patent antigens are backfilled with UniProt IDs from the fetch target map.
+- `outputs/patent_search_audit.csv` records the target-level NCBI query,
+  hit/kept counts, retmax cap status, and manual NCBI/Google Patent URLs.
+- `outputs/patent_validation_queue.csv` and
+  `outputs/patent_validation_patent_summary.csv` make the USPTO / Google Patents
+  review queue explicit without claiming those sites have already been parsed.
 - PubMed references support curation but are not direct sequence-pair evidence.
 
 See `notes/ANTIBODY_ANTIGEN_SCHEMA.md` for the schema.

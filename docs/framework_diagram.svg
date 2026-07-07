@@ -42,7 +42,7 @@
   <text x="290" y="208" text-anchor="middle" class="label">UniProt</text>
   <text x="290" y="223" text-anchor="middle" class="detail">Canonical antigen seqs</text>
 
-  <text x="207" y="275" text-anchor="middle" class="count">62 targets · 200 seqs/target</text>
+  <text x="207" y="275" text-anchor="middle" class="count">64 targets · 200 seqs/target</text>
 
   <!-- Sub-project 2: Designed Protein -->
   <rect x="410" y="75" width="365" height="230" rx="10" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1"/>

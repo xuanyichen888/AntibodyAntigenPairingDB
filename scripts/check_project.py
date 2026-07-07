@@ -18,6 +18,9 @@ CHECKS = [
     ("latest", PROJECT_ROOT / "outputs" / "antibody_antigen_candidates.csv"),
     ("manual_sample", PROJECT_ROOT / "outputs" / "manual_validation_sample.csv"),
     ("binder_type_review_queue", PROJECT_ROOT / "outputs" / "binder_type_review_queue.csv"),
+    ("patent_search_audit", PROJECT_ROOT / "outputs" / "patent_search_audit.csv"),
+    ("patent_validation_queue", PROJECT_ROOT / "outputs" / "patent_validation_queue.csv"),
+    ("patent_validation_patent_summary", PROJECT_ROOT / "outputs" / "patent_validation_patent_summary.csv"),
 ]
 
 REQUIRED_CANDIDATE_COLUMNS = {

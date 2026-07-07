@@ -137,6 +137,11 @@ NON_ANTIBODY_BINDER_PATTERNS = [
     r"\bimmunoglobulin-binding protein\b",
 ]
 
+PATENT_NUMBER_RE = re.compile(
+    r"\b(?:US|WO|EP)\s*\d{4,12}\s*(?:[A-Z]\d?|[A-Z]{1,2}\d?)?\b",
+    re.IGNORECASE,
+)
+
 ANTIBODY_TARGET_KEYWORDS = [
     "antibody", "immunoglobulin", " fab", "fab ", "fv", "scfv", "vhh",
     "heavy chain", "light chain", "kappa chain", "lambda chain",
@@ -249,6 +254,14 @@ def is_non_antibody_binder(text: str) -> bool:
     return any(re.search(pattern, d) for pattern in NON_ANTIBODY_BINDER_PATTERNS)
 
 
+def normalize_patent_number(value: str) -> str:
+    match = PATENT_NUMBER_RE.search(value or "")
+    if not match:
+        return clean(value)
+    raw = re.sub(r"\s+", " ", match.group(0).upper()).strip(" .;,")
+    return raw
+
+
 def infer_antigen_species(antigen_name: str, evidence_text: str = "") -> str:
     antigen = clean(antigen_name)
     if antigen in ANTIGEN_SPECIES_BY_NAME:
@@ -340,13 +353,13 @@ def looks_like_antibody_target(desc: str) -> bool:
 
 def extract_patent_reference(row: dict) -> str:
     explicit = clean(row.get("patent_id"))
+    if explicit:
+        return normalize_patent_number(explicit)
     source = clean(row.get("source"))
-    text = " ".join(
-        part for part in [explicit, source, clean(row.get("binder_name"))] if part
-    )
-    match = re.search(r"\b(?:US|WO|EP)\s*\d+[A-Z0-9 ]{0,8}", text, re.IGNORECASE)
+    text = " ".join(part for part in [source, clean(row.get("binder_name"))] if part)
+    match = PATENT_NUMBER_RE.search(text)
     if match:
-        return re.sub(r"\s+", " ", match.group(0)).strip(" .;,")
+        return normalize_patent_number(match.group(0))
     if source and source.upper() != "US":
         return source
     accession = clean(row.get("ncbi_accession"))
@@ -755,8 +768,13 @@ app.py                            (Streamlit browser)
 1. Reclassify remaining "other" + "antibody fragment" rows during manual review.
 2. Further normalize PDB-derived antigen names to standard gene symbols.
 3. Add published KD values from literature for PDB-derived pairs.
-4. Expand NCBI searches to additional targets (IL-17, IL-4/IL-13, PCSK9, CD38, CGRP, BCMA, TROP2, etc.).
-5. Promote reviewed rows into `antibody_antigen_curated.csv`.
+4. Use `scripts/build_patent_review_artifacts.py` to maintain the USPTO /
+   Google Patents validation queue for SEQ ID NO, chain role, and claim/example
+   context review.
+5. Confirm the definition of "designed protein" before splitting ProteinBase /
+   de novo binder rows into a separate output module.
+6. Promote reviewed rows into `antibody_antigen_curated.csv` and future
+   `candidates_v3.csv`.
 """
     memo_path = OUTPUT_DIR / "validation_memo.md"
     memo_path.write_text(text, encoding="utf-8")

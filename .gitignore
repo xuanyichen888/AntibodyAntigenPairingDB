@@ -24,6 +24,9 @@ data/raw/
 data/pdb/
 data/patent/
 data/literature/
-outputs/
+outputs/*
+!outputs/patent_search_audit.csv
+!outputs/patent_validation_queue.csv
+!outputs/patent_validation_patent_summary.csv
 *.bak
 *.tmp
