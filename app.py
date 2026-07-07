@@ -74,6 +74,13 @@ selected_labels = st.sidebar.multiselect("Interaction Label", label_options, def
 conf_options = sorted(df["confidence"].unique())
 selected_conf = st.sidebar.multiselect("Confidence", conf_options, default=conf_options)
 
+binder_status_options = sorted(df["binder_type_status"].unique())
+selected_binder_status = st.sidebar.multiselect(
+    "Binder Type Status",
+    binder_status_options,
+    default=binder_status_options,
+)
+
 antigen_list = sorted(df["antigen_name"].unique())
 selected_antigens = st.sidebar.multiselect(
     f"Antigen ({len(antigen_list)} unique)",
@@ -92,6 +99,7 @@ filtered = filtered[filtered["source_type"].isin(selected_sources)]
 filtered = filtered[filtered["binder_type"].isin(selected_types)]
 filtered = filtered[filtered["interaction_label"].isin(selected_labels)]
 filtered = filtered[filtered["confidence"].isin(selected_conf)]
+filtered = filtered[filtered["binder_type_status"].isin(selected_binder_status)]
 
 if selected_antigens:
     filtered = filtered[filtered["antigen_name"].isin(selected_antigens)]
@@ -117,10 +125,12 @@ tab_table, tab_charts, tab_detail, tab_literature = st.tabs(
 with tab_table:
     display_cols = [
         "record_id", "binder_name", "binder_type", "antigen_name",
+        "antigen_uniprot_id", "antigen_species",
         "interaction_label", "confidence", "source_type",
-        "affinity_value", "affinity_unit",
+        "affinity_value", "affinity_unit", "normalized_KD_nM",
+        "binder_type_status", "pdb_pairing_status",
         "seq_len_binder", "seq_len_target",
-        "source_reference", "curation_status",
+        "qa_flags", "source_reference", "curation_status",
     ]
     st.dataframe(
         filtered[display_cols],
@@ -183,6 +193,10 @@ with tab_detail:
                 st.markdown("**Antigen / Target**")
                 st.write(f"**Antigen:** {row['antigen_name']}")
                 st.write(f"**Target:** {row['target_name']}")
+                if row.get("antigen_uniprot_id"):
+                    st.write(f"**UniProt:** {row['antigen_uniprot_id']}")
+                if row.get("antigen_species"):
+                    st.write(f"**Species:** {row['antigen_species']}")
                 st.write(f"**Length:** {row['seq_len_target']} aa")
                 st.text_area("Target Sequence", row["target_sequence"], height=120, disabled=True)
 
@@ -192,13 +206,24 @@ with tab_detail:
                 st.write(f"**Interaction:** {row['interaction_label']}")
                 st.write(f"**Confidence:** {row['confidence']}")
                 st.write(f"**Curation:** {row['curation_status']}")
+                st.write(f"**Type Status:** {row.get('binder_type_status', '')}")
             with meta_col2:
                 st.write(f"**Source:** {row['source_type']}")
                 st.write(f"**Dataset:** {row.get('source_dataset', '')}")
                 st.write(f"**Reference:** {row['source_reference']}")
+                if row.get("pdb_pairing_status"):
+                    st.write(f"**PDB Pairing:** {row['pdb_pairing_status']}")
+                if row.get("paired_chain_roles"):
+                    st.write(f"**PDB Roles:** {row['paired_chain_roles']}")
             with meta_col3:
                 if row["affinity_value"]:
                     st.write(f"**Affinity:** {row['affinity_value']} {row['affinity_unit']}")
+                if row.get("normalized_KD_nM"):
+                    st.write(f"**KD:** {row['normalized_KD_nM']} nM")
+                if row.get("binder_type_suggestion"):
+                    st.write(f"**Type Review:** {row['binder_type_suggestion']}")
+                if row.get("qa_flags"):
+                    st.write(f"**QA:** {row['qa_flags']}")
                 if row.get("evidence_text"):
                     st.write(f"**Evidence:** {row['evidence_text'][:200]}")
 

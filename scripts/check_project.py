@@ -17,6 +17,7 @@ CHECKS = [
     ("v2", PROJECT_ROOT / "outputs" / "candidates_v2.csv"),
     ("latest", PROJECT_ROOT / "outputs" / "antibody_antigen_candidates.csv"),
     ("manual_sample", PROJECT_ROOT / "outputs" / "manual_validation_sample.csv"),
+    ("binder_type_review_queue", PROJECT_ROOT / "outputs" / "binder_type_review_queue.csv"),
 ]
 
 REQUIRED_CANDIDATE_COLUMNS = {
@@ -25,6 +26,14 @@ REQUIRED_CANDIDATE_COLUMNS = {
     "binder_sequence",
     "antigen_name",
     "target_sequence",
+    "antigen_uniprot_id",
+    "binder_species",
+    "antigen_species",
+    "normalized_KD_nM",
+    "binder_type_status",
+    "complex_group_id",
+    "pdb_pairing_status",
+    "qa_flags",
     "source_type",
 }
 

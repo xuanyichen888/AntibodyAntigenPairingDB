@@ -13,20 +13,50 @@ Required core columns:
 - `antigen_name`
 - `target_name`
 - `target_sequence`
+- `antigen_uniprot_id`
+- `binder_species`
+- `antigen_species`
 - `interaction_label`
 - `affinity_value`
 - `affinity_unit`
+- `normalized_KD_nM`
 - `evidence_text`
 - `source_reference`
 - `confidence`
 - `needs_review`
+- `complex_group_id`
+- `pdb_pairing_status`
+- `paired_chain_roles`
+- `binder_type_status`
+- `binder_type_suggestion`
+- `qa_flags`
 
-Normalized affinity (added during curation):
+Normalized affinity:
 
-- `normalized_KD_nM` — KD converted to nanomolar. Populated during curation after
-  verifying that the raw `affinity_value` + `affinity_unit` are consistent with the
-  source. `affinity_unit` in the seed is `source_KD` (raw molar values from
-  ProteinBase); the curation step should convert to nM and record the result here.
+- `normalized_KD_nM` — KD converted to nanomolar. The merge step converts
+  ProteinBase `source_KD` molar values into this field. Curators should verify
+  the source assay before promoting rows to the curated table.
+
+Source and QA fields:
+
+- `antigen_uniprot_id` — UniProt accession for the antigen when available.
+  Patent rows are backfilled from the target map used by
+  `scripts/fetch_patent_sequences.py`.
+- `qa_flags` — semicolon-separated machine-readable warnings. Current merge-time
+  flags include `binder_sequence_contains_x`, `target_sequence_contains_x`,
+  `binder_sequence_invalid_chars`, `target_sequence_invalid_chars`,
+  `binder_sequence_ambiguous_aa`, `target_sequence_ambiguous_aa`, and
+  `possible_pdb_antibody_chain_as_antigen`.
+- `binder_species` / `antigen_species` — conservative organism hints inferred
+  from UniProt target maps, antigen names, and explicit source text. Blank means
+  the pipeline did not have enough evidence.
+- `complex_group_id`, `paired_chain_roles`, `pdb_pairing_status` — PDB-only
+  complex-level pairing hints. Because the current PDB intermediate table does
+  not retain chain IDs, these fields group by PDB ID and antigen rather than
+  claiming exact heavy/light chain identity.
+- `binder_type_status` — `classified`, `needs_manual_review`, or
+  `non_antibody_candidate`. Rows that need review are written to
+  `outputs/binder_type_review_queue.csv`.
 
 Allowed manual antibody type classes:
 
