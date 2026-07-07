@@ -1,0 +1,93 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    text { font-family: "Helvetica Neue", Arial, sans-serif; }
+    .title { font-size: 18px; font-weight: 700; fill: #1a1a2e; }
+    .subtitle { font-size: 12px; fill: #64748b; }
+    .label { font-size: 13px; font-weight: 600; fill: #1a1a2e; }
+    .detail { font-size: 10px; fill: #64748b; }
+    .count { font-size: 11px; font-weight: 600; fill: #3b82f6; }
+    .box { rx: 8; ry: 8; stroke-width: 1.5; }
+    .section-label { font-size: 11px; font-weight: 700; fill: #64748b; letter-spacing: 1px; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#94a3b8" />
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="600" fill="#fafbfc" rx="12"/>
+
+  <!-- Title -->
+  <text x="400" y="35" text-anchor="middle" class="title">Antibody-Antigen PairingDB — Framework</text>
+  <text x="400" y="55" text-anchor="middle" class="subtitle">Wei Wang Lab · UCSD · 2026</text>
+
+  <!-- Sub-project 1: Natural Antibody -->
+  <rect x="25" y="75" width="365" height="230" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="1"/>
+  <text x="207" y="95" text-anchor="middle" class="section-label">SUB-PROJECT 1: NATURAL ANTIBODY</text>
+
+  <rect x="45" y="110" width="150" height="55" class="box" fill="#fff" stroke="#60a5fa"/>
+  <text x="120" y="133" text-anchor="middle" class="label">RCSB PDB</text>
+  <text x="120" y="148" text-anchor="middle" class="detail">Co-crystal structures</text>
+
+  <rect x="215" y="110" width="150" height="55" class="box" fill="#fff" stroke="#60a5fa"/>
+  <text x="290" y="133" text-anchor="middle" class="label">NCBI Patent</text>
+  <text x="290" y="148" text-anchor="middle" class="detail">GenBank PAT division</text>
+
+  <rect x="45" y="185" width="150" height="55" class="box" fill="#fff" stroke="#60a5fa"/>
+  <text x="120" y="208" text-anchor="middle" class="label">PubMed</text>
+  <text x="120" y="223" text-anchor="middle" class="detail">Literature evidence</text>
+
+  <rect x="215" y="185" width="150" height="55" class="box" fill="#fff" stroke="#60a5fa"/>
+  <text x="290" y="208" text-anchor="middle" class="label">UniProt</text>
+  <text x="290" y="223" text-anchor="middle" class="detail">Canonical antigen seqs</text>
+
+  <text x="207" y="275" text-anchor="middle" class="count">62 targets · 200 seqs/target</text>
+
+  <!-- Sub-project 2: Designed Protein -->
+  <rect x="410" y="75" width="365" height="230" rx="10" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1"/>
+  <text x="592" y="95" text-anchor="middle" class="section-label">SUB-PROJECT 2: DESIGNED PROTEIN</text>
+
+  <rect x="430" y="110" width="150" height="55" class="box" fill="#fff" stroke="#a78bfa"/>
+  <text x="505" y="133" text-anchor="middle" class="label">ProteinBase</text>
+  <text x="505" y="148" text-anchor="middle" class="detail">Literature-curated seed</text>
+
+  <rect x="600" y="110" width="150" height="55" class="box" fill="#fff" stroke="#a78bfa"/>
+  <text x="675" y="133" text-anchor="middle" class="label">De Novo Design</text>
+  <text x="675" y="148" text-anchor="middle" class="detail">Computational binders</text>
+
+  <rect x="430" y="185" width="150" height="55" class="box" fill="#fff" stroke="#a78bfa" stroke-dasharray="5 3"/>
+  <text x="505" y="208" text-anchor="middle" class="label" fill="#a78bfa">RFdiffusion</text>
+  <text x="505" y="223" text-anchor="middle" class="detail">Planned</text>
+
+  <rect x="600" y="185" width="150" height="55" class="box" fill="#fff" stroke="#a78bfa" stroke-dasharray="5 3"/>
+  <text x="675" y="208" text-anchor="middle" class="label" fill="#a78bfa">ProteinMPNN</text>
+  <text x="675" y="223" text-anchor="middle" class="detail">Planned</text>
+
+  <text x="592" y="275" text-anchor="middle" class="count">300 curated pairs + expansion</text>
+
+  <!-- Arrows to pipeline -->
+  <line x1="207" y1="305" x2="207" y2="340" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="592" y1="305" x2="592" y2="340" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Pipeline -->
+  <rect x="100" y="345" width="600" height="60" class="box" fill="#fff" stroke="#64748b"/>
+  <text x="400" y="370" text-anchor="middle" class="label">Merge &amp; QA Pipeline</text>
+  <text x="400" y="388" text-anchor="middle" class="detail">Normalize antigens · Deduplicate · Quality flags · Classify binder types · Pair VH/VL</text>
+
+  <!-- Arrow to master -->
+  <line x1="400" y1="405" x2="400" y2="435" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Master table -->
+  <rect x="200" y="440" width="400" height="50" class="box" fill="#f0fdf4" stroke="#86efac"/>
+  <text x="400" y="462" text-anchor="middle" class="label">antibody_antigen_master.csv</text>
+  <text x="400" y="478" text-anchor="middle" class="count">Unified database · searchable · versioned</text>
+
+  <!-- Arrow to app -->
+  <line x1="400" y1="490" x2="400" y2="520" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- App -->
+  <rect x="250" y="525" width="300" height="45" class="box" fill="#fff7ed" stroke="#fdba74"/>
+  <text x="400" y="548" text-anchor="middle" class="label">Streamlit Cloud App</text>
+  <text x="400" y="562" text-anchor="middle" class="detail">Interactive browser · filters · charts · download</text>
+</svg>

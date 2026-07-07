@@ -16,7 +16,7 @@ Antibody-antigen pairing requires two related but different evidence layers:
 antibody / binder sequence -> antigen / target sequence | source | evidence
 ```
 
-The current database contains **1,310 sequence-pair candidates** from three
+The current database contains **3,733 sequence-pair candidates** from three
 structured sources and **120 PubMed reference rows** as a literature evidence
 layer. PubMed rows are not counted as sequence-pair candidates unless a paper or
 supplement is parsed to recover paired amino-acid sequences.
@@ -47,11 +47,13 @@ app.py                               -> Streamlit web app
 
 ## Data Summary
 
-- **1,310** antibody-antigen sequence-pair candidates
-- **283** unique antigens
-- **3** sequence sources: RCSB PDB (754), ProteinBase seed (300), NCBI Patent (256)
-- **7** binder types: nanobody, heavy chain, light chain, scFv, Fab, other, antibody fragment
+- **3,733** antibody-antigen sequence-pair candidates
+- **62** therapeutic targets searched across NCBI Patent
+- **3** sequence sources: RCSB PDB (754), ProteinBase seed (300), NCBI Patent (2,679)
+- **7+** binder types: antibody fragment, scFv, antibody, nanobody, heavy chain, light chain, Fab, other
 - **90** rows with affinity values
+- **90** rows with normalized KD values in `normalized_KD_nM`
+- **2,679** Patent rows with antigen UniProt IDs
 - **120** PubMed references in `pubmed_references.csv`
 
 ## Versions
@@ -92,6 +94,7 @@ outputs/
   candidates_v2.csv
   antibody_antigen_candidates.csv
   antibody_antigen_curated.csv
+  binder_type_review_queue.csv
   manual_validation_sample.csv
   validation_memo.md
 
@@ -147,8 +150,19 @@ the app continues to read the root master table.
 - PDB-derived pairs are high-confidence structure candidates but still need
   manual review. A small number of possible antibody-chain-as-antigen cases are
   flagged in `qa_flags`.
+- Sequence QA flags are added during merge. Ambiguous `X` residues are retained
+  in the sequence fields and flagged with `binder_sequence_contains_x` or
+  `target_sequence_contains_x`.
+- ProteinBase `source_KD` molar values are normalized into `normalized_KD_nM`
+  during merge.
+- PDB rows receive conservative complex-level pairing metadata:
+  `complex_group_id`, `paired_chain_roles`, and `pdb_pairing_status`.
+- `binder_type_status` separates classified rows from unresolved Patent
+  fragments and likely non-antibody binders. The unresolved rows are written to
+  `outputs/binder_type_review_queue.csv` for manual review.
 - NCBI Patent rows are target-annotated sequence candidates. They need patent
   context review for heavy/light pairing, `SEQ ID NO`, and claim/example support.
+  Patent antigens are backfilled with UniProt IDs from the fetch target map.
 - PubMed references support curation but are not direct sequence-pair evidence.
 
 See `notes/ANTIBODY_ANTIGEN_SCHEMA.md` for the schema.
